@@ -6,16 +6,18 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
 import styles from './styles';
-import { Ionicons, Entypo } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 export default function App() {
 
-  const [nome, setNome] = useState();
-  const [codigo, setCodigo] = useState();
-  const [email, setEmail] = useState();
-  const [senha, setSenha] = useState();
-  const [confirmaSenha, setConfirmaSenha] = useState();
+  const [nome, setNome] = useState('');
+  const [codigo, setCodigo] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmaSenha, setConfirmaSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarConfirmaSenha, setMostrarConfirmaSenha] = useState(false);
 
   const [usuarios, setUsuarios] = useState([]);
   const storage_name = '@usuarios';
@@ -29,7 +31,7 @@ export default function App() {
   async function salvaDados() {
 
     //let novoRegistro = !id;
-    let userIndex = usuarios.findIndex(c => c.id == id);
+    let userIndex = usuarios.findIndex(c => c.codigo == codigo);
     let novoRegistro = userIndex < 0;
 
     let usuario = {
@@ -79,7 +81,7 @@ export default function App() {
           console.log('Encontrei o objeto para alterar. Estava na posição: ' + userIndex);
         }
       }
-      const jsonValue = JSON.stringify(contatos);
+      const jsonValue = JSON.stringify(usuarios);
       await AsyncStorage.setItem(storage_name, jsonValue);
       Keyboard.dismiss();
       limparCampos();
@@ -105,7 +107,7 @@ export default function App() {
 
 
   function editar(identificador) {
-    const usuario = usuarios.find(us => us.id == identificador);
+    const usuario = usuarios.find(us => us.codigo == identificador);
 
     if (usuario) { 
       setCodigo(usuario.codigo);
@@ -115,7 +117,7 @@ export default function App() {
       setConfirmaSenha(usuario.confirmaSenha);
     }
 
-    console.log(contato);
+    console.log(usuario);
   }
 
 
@@ -141,7 +143,7 @@ export default function App() {
   }
 
   function apagarTudo() {
-    if (Alert.alert('Muita atenção!!!', 'Confirma a exclusão de todos os contatos?',
+    if (Alert.alert('Muita atenção!!!', 'Confirma a exclusão de todos os usuários?',
       [
         {
           text: 'Sim, confirmo!',
@@ -163,7 +165,7 @@ export default function App() {
       [
         {
           text: 'Sim',
-          onPress: () => efetivaRemoverContato(identificador),
+          onPress: () => efetivaRemoverUsuario(identificador),
         },
         {
           text: 'Não',
@@ -172,13 +174,13 @@ export default function App() {
       ]);
   }
 
-  async function efetivaRemoverContato(identificador) {
+  async function efetivaRemoverUsuario(identificador) {
     try {
-      const contatoAux = contatos.filter(contato => contato.id != identificador);
-      const jsonValue = JSON.stringify(contatoAux);
+      const usuarioAux = usuarios.filter(usuario => usuario.codigo != identificador);
+      const jsonValue = JSON.stringify(usuarioAux);
       await AsyncStorage.setItem(storage_name, jsonValue);
       Keyboard.dismiss();
-      Alert.alert('Contato apagado com sucesso!!!');
+      Alert.alert('Usuário apagado com sucesso!!!');
       limparCampos();
       await carregaDados();
     } catch (e) {
@@ -190,27 +192,67 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 25, color: '#FFF', backgroundColor: 'blue', width: '100%', textAlign: 'center' }}>
-        Agenda de Contatos - v1.0</Text>
-      <Text /><Text />
+      <Text style={styles.tituloPrincipal}>
+        Cadastro de múltiplos usuários
+      </Text>
 
-      <View style={styles.areaDados}>
-
+      <View style={styles.areaCadastro}>
         <View style={styles.areaNome}>
-          <Text style={styles.labelCampo}>Nome</Text>
-          <TextInput style={styles.caixaTexto}
-            onChangeText={(texto) => setNome(texto)}
-            value={nome} />
+          <Text style={styles.legendaNome}>Código</Text>
+          <TextInput
+            style={styles.campoNome}
+            onChangeText={(texto) => setCodigo(texto)}
+            value={codigo}
+            keyboardType='numeric'
+          />
         </View>
 
         <View style={styles.areaTelefone}>
-          <Text style={styles.labelCampo}>Telefone</Text>
-          <TextInput style={styles.caixaTexto}
-            onChangeText={(texto) => setTelefone(texto)}
-            value={telefone}
-            keyboardType='phone-pad' />
+          <Text style={styles.legendaTelefone}>Nome</Text>
+          <TextInput
+            style={styles.campoTelefone}
+            onChangeText={(texto) => setNome(texto)}
+            value={nome}
+          />
+        </View>
+      </View>
+
+      <View style={styles.areaCadastroEmail}>
+        <View style={styles.areaEmail}>
+          <Text style={styles.legendaNome}>E-mail</Text>
+          <TextInput
+            style={styles.campoNome}
+            onChangeText={(email) => setEmail(email)}
+            value={email}
+            keyboardType='email-address'
+          />
+        </View>
+      </View>
+
+      <View style={styles.areaCadastro}>
+        <View style={styles.areaTelefone}>
+          <Text style={styles.legendaTelefone}>Senha</Text>
+          <View style={styles.senhaContainer}>
+            <TextInput
+              secureTextEntry={true}
+              style={styles.campoTelefone}
+              onChangeText={(senha) => setSenha(senha)}
+              value={senha}
+            />
+          </View>
         </View>
 
+        <View style={styles.areaTelefone}>
+          <Text style={styles.legendaTelefone}>Confirmar senha</Text>
+          <View style={styles.senhaContainer}>
+            <TextInput
+              secureTextEntry={true}
+              style={styles.campoTelefone}
+              onChangeText={(confirmarSenha) => setConfirmaSenha(confirmarSenha)}
+              value={confirmaSenha}
+            />
+          </View>
+        </View>
       </View>
 
       <View style={styles.areaBotoes}>
@@ -229,23 +271,27 @@ export default function App() {
 
       <ScrollView style={styles.listaContatos} contentContainerStyle={{ alignItems: 'center' }} >
         {
-          contatos.map((contato, index) => (
+          usuarios.map((usuario, index) => (
             <View style={styles.contato} key={index.toString()}>
-
-              <Text style={styles.listaNome}> {contato.nome}</Text>
-              <View style={styles.dadosListaTelefone}>
-                <Text style={styles.listaTelefone} >{contato.telefone} </Text>
+              <View style={styles.cardHeader}>
+                <Text style={styles.listaNome}>Código: {usuario.codigo}</Text>
+                <View style={styles.dadosBotoesAcao}>
+                  <TouchableOpacity onPress={() => editar(usuario.codigo)}>
+                    <Entypo name="edit" size={24} color="#032b1d" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => removerElemento(usuario.codigo)}>
+                    <FontAwesome name="remove" size={24} color="red" />
+                  </TouchableOpacity>
+                </View>
               </View>
-
-              <View style={styles.dadosBotoesAcao}>
-                <TouchableOpacity onPress={() => removerElemento(contato.id)}>
-                  <FontAwesome name="remove" size={32} color="red" />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => editar(contato.id)}>
-                  <Entypo name="edit" size={32} color="black" />
-                </TouchableOpacity>
-
+              
+              <View style={styles.cardContent}>
+                <View style={styles.dadosListaTelefone}>
+                  <Text style={styles.listaTelefone}>Nome: {usuario.nome}</Text>
+                </View>
+                <View style={styles.dadosListaEmail}>
+                  <Text style={styles.email}>Email: {usuario.email}</Text>
+                </View>
               </View>
             </View>
           ))
